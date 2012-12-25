@@ -137,6 +137,7 @@ namespace nntp
     return read_lines(result);
   }
   
+  // write a line to the server and return the response code
   int nntp::process_command(const std::string &line, const int code, std::string &result)
   {
     // send the command to the server
