@@ -30,15 +30,12 @@ int main(int argc, const char * argv[])
       cout << "> ";
       
       std::string command;
-      
       std::getline(std::cin, command);  // read a line from std::cin into line
           
       nntp.process_block_string(command + "\n", output);
-      std::cout << output << std::endl;
       
-    }
-    
-    
+      std::cout << output << std::endl;
+    }    
   }
   
   return 0;
