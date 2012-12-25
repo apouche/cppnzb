@@ -1,0 +1,24 @@
+//
+//  cppnzb.pch
+//  cppnzb
+//
+//  Created by Johan Attali on 12/25/12.
+//  Copyright (c) 2012 Johan Attali. All rights reserved.
+//
+
+#ifndef CPPNZB_PCH
+#define CPPNZB_PCH 1
+
+#include <string>
+#include <math.h>
+
+#include <boost/intrusive_ptr.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <boost/array.hpp>
+
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+#endif
