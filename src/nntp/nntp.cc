@@ -125,14 +125,19 @@ namespace nntp
   
   int nntp::read_all_lines(std::string& output)
   {
-    // initialize length variable
-    char t[1024*8];
-    char* buf = t;
-    int length          = 0;
+    // 8kb buffer
+    char buf[8192];
     
-    length          +=  socket.read_some(buf, 8*1024);
-    buf[length] = '\0';
+    // read socket
+    int length        =  socket.read_some(buf, 8192);
+    
+    // remove last two characters from input which are \r\n
+    buf[length-2]     = '\0';
+    
+    // update output
     output = buf;
+    
+    // return length read
     return output.length();
     
   }
