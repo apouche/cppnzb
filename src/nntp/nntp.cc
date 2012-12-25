@@ -51,7 +51,7 @@ namespace nntp
     if (!socket.connect(host, service))
       return false;
     
-    if (read_line() != 200)
+    if (read_lines() != 200)
     {
       socket.close();
       return false;
@@ -66,224 +66,13 @@ namespace nntp
     if (!socket.secureConnect(host, service))
       return false;
     
-    if (read_line() != 200)
+    if (read_lines() != 200)
     {
       socket.close();
       return false;
     }
     else
       return true;
-  }
-  
-  // read a line from the usenet server and return the status code
-  int nntp::read_line()
-  {
-    boost::system::error_code   error;              // store errors thrown while reading data
-    int                         return_code;        // store return code
-    int                         length;             // current buffer length
-    
-    // if we do have some data in the buffer, move it to the beginning
-    if (position > buffer)
-      memmove(buffer, position, strlen(position) + 1);
-    
-    // initialize length variable
-    length          =   strlen(buffer);
-    
-    // keep reading until we find a return character in the buffer
-    while ((position = strchr(buffer, '\r')) == NULL) {
-      length          +=  socket.read_some(buffer + length, sizeof(buffer) - length - 1);
-      buffer[length]  =   '\0';
-    }
-    
-    // now split the string at the return character
-    *position       =   '\0';
-    
-    // extract the return code from the line
-    return_code     =   atoi(buffer);
-    
-    // leftovers are after the return character
-    position        +=  2;
-    
-    // and return the result
-    return return_code;
-  }
-  
-  // read a line from the usenet server and put it in line
-  int nntp::read_line(char *line)
-  {
-    int result;             // store return code
-    
-    // do the actual read_line()
-    result  =   read_line();
-    
-    // and store teh contents of the buffer into the provided line
-    strncpy(line, buffer + 4, 511);
-    
-    // and return the result
-    return result;
-  }
-  
-  int nntp::read_all_lines(std::string& output)
-  {
-    // 8kb buffer
-    char buf[8192];
-    
-    // read socket
-    int length        =  socket.read_some(buf, 8192);
-    
-    // remove last two characters from input which are \r\n
-    buf[length-2]     = '\0';
-    
-    // update output
-    output = buf;
-    
-    // return length read
-    return output.length();
-    
-  }
-  
-  
-  // read a line from the usenet server and put it in line
-  int nntp::read_line(std::string& line)
-  {
-    int result;             // store return code
-    
-    // do the actual read_line()
-    result  =   read_line();
-    
-    // and store teh contents of the buffer into the provided line
-    line    =   buffer + 4;
-    
-    // and return the result
-    return result;
-  }
-  
-  
-  
-  // read a line from a multiline command and put it in the buffer
-  bool nntp::read_multiline()
-  {
-    boost::system::error_code   error;              // store errors thrown while reading data
-    int                         length;             // current buffer length
-    
-    // if we do have some data in the buffer, move it to the beginning
-    if (position > buffer)
-      memmove(buffer, position, strlen(position) + 1);
-    
-    // initialize length variable
-    length          =   strlen(buffer);
-    
-    // keep reading until we find a return character in the buffer
-    while ((position = strchr(buffer, '\r')) == NULL) {
-      length          +=  socket.read_some(buffer + length, sizeof(buffer) - length - 1);
-      buffer[length]  =   '\0';
-    }
-    
-    // now split the string at the return character
-    *position       =   '\0';
-    position        +=  2;
-    
-    // single dot, end of results
-    if (buffer[0] == '.' && buffer[1] == '\0')
-      return false;
-    else
-      return true;
-  }
-  
-  // read a line from a multiline command and put it in line
-  bool nntp::read_multiline(std::string& line)
-  {
-    // can we still read a line?
-    if (!read_multiline())
-      return false;
-    
-    // success, copy the line from the buffer
-    line    =   buffer;
-    return true;
-  }
-  
-  // read a line from a multiline command and put it in line
-  bool nntp::read_multiline(char *line)
-  {
-    // can we still read a line?
-    if (!read_multiline())
-      return false;
-    
-    // success, copy the line from the buffer
-    strncpy(line, buffer, 1023);
-    return true;
-  }
-  
-  // read a data block from the server
-  void nntp::read_block()
-  {
-    int length;     // current buffer length
-    int offset(0);  // offset to start string search
-    
-    // initialize length variable
-    length  =   strlen(position);
-    
-    // if we do have some data in the buffer, move it to the beginning
-    if (position > buffer)
-      memmove(buffer, position, length + 1);
-    
-    // keep reading until we find a the end of the block
-    while ((position = strstr(buffer + offset, "\r\n.\r\n")) == NULL) {
-      
-      // mark the position up to where we searched
-      offset          =   length - 4;
-      
-      // offset cannot be negative
-      if (offset < 0)
-        offset = 0;
-      
-      // and read the next batch
-      length          +=  socket.read_some(buffer + length, sizeof(buffer) - length - 1);
-      buffer[length]  =   '\0';
-    }
-    
-    // split the string
-    *position   =   '\0';
-    position    +=  5;
-  }
-  
-  // read a data block from the server
-  void nntp::read_block(std::string& block)
-  {
-    // read the block into the buffer
-    read_block();
-    
-    // put the data in the block
-    block   =   buffer;
-  }
-  
-  // read a data block from the server
-  void nntp::read_block(char *block)
-  {
-    // read the block into the buffer
-    read_block();
-    
-    // put the data in the block
-    strncpy(block, buffer, 1048575);
-  }
-  
-  // read a data block from the server
-  int nntp::read_block(char **block)
-  {
-    int length;             // length of return data
-    
-    // read the block into the buffer
-    read_block();
-    
-    // allocate a buffer to hold it
-    length  =   strlen(buffer);
-    *block  =   new char [length + 1];
-    
-    // copy the buffer contents to the new block
-    strcpy(*block, buffer);
-    
-    // and return the length
-    return length;
   }
   
   // write a line to the usenet server
@@ -300,6 +89,34 @@ namespace nntp
       line    +=  socket.write_some(line);
   }
   
+  int nntp::read_lines(std::string& output)
+  {
+    // 8kb buffer
+    char buf[8192];
+    
+    // read socket
+    int length        =  socket.read_some(buf, 8192);
+    
+    // remove last two characters from input which are \r\n
+    buf[length-2]     = '\0';
+    
+    // update output
+    output = buf;
+    
+    // return length read
+    return atoi(buf);
+    
+  }
+  
+  int nntp::read_lines()
+  {
+    // create returned output
+    std::string output;
+    
+    // read lines
+    return read_lines(output);
+  }
+  
   // write a line to the server and return the response code
   int nntp::process_command(const std::string& line)
   {
@@ -307,17 +124,7 @@ namespace nntp
     write_line(line);
     
     // and return the result
-    return read_line();
-  }
-  
-  // write a line to the server and return the response code
-  int nntp::process_command(const char *line, char *result)
-  {
-    // send the command to the server
-    write_line(line);
-    
-    // and return the result
-    return read_line(result);
+    return read_lines();
   }
   
   // write a line to the server and return the response code
@@ -327,37 +134,29 @@ namespace nntp
     write_line(line);
     
     // and return the result
-    return read_line(result);
+    return read_lines(result);
+  }
+  
+  int nntp::process_command(const std::string &line, const int code, std::string &result)
+  {
+    // send the command to the server
+    write_line(line);
+    
+    // read lines
+    int c = read_lines(result);
+    
+    // throw exception if mismatched
+    if (c != code)
+      throw decode_exception("Unexpected return code");
+    
+    return c;
+    
   }
   
   // login to the usenet server
   bool nntp::login(const std::string& user, const std::string& pass)
   {
     return process_command("AUTHINFO USER "+user+"\n") == 381 && process_command("AUTHINFO PASS "+pass+"\n") == 281;
-  }
-  
-  // write a line to the server and process it's multiline response
-  int nntp::process_block_command(const char *line, int code, char **result)
-  {
-    // check if the return code from the server is correct
-    if (code >= 0 && process_command(line) != code)
-      throw server_exception("Unexpected reply from server.");
-    
-    // read the multiline response
-    return read_block(result);
-  }
-  
-  int nntp::process_block_string(const std::string& str, std::string& output)
-  {
-    //    std::string t = str + "\n";
-    
-    //    std::cout << t << std::endl;
-    
-    
-    write_line(str);
-    
-    return read_all_lines(output);
-    
   }
   
   // get a usenet group

@@ -74,6 +74,7 @@ namespace nntp
      */
     bool    secureConnect(const std::string& host, const std::string& service = "nntps");
     
+        
     /**
      * Read the status code from the usenet server
      *
@@ -81,101 +82,16 @@ namespace nntp
      *         newline) is in the buffer variable.
      * @return status code returned by the server
      */
-    int     read_line();
-    
-    int     read_all_lines(std::string& output);
+    int     read_lines(std::string& output);
     
     /**
-     * Read a line from the usenet server and return the status code
+     * Read the status code from the usenet server
      *
-     * @note   The trailing enter is removed from the line. The line
-     *         buffer should be at least 512 bytes long.
-     *
-     * @param  line    string to put the line in
+     * @note   The actual text sent back by the server (without the trailing
+     *         newline) is in the buffer variable.
      * @return status code returned by the server
      */
-    int     read_line(char *line);
-    
-    /**
-     * Read a line from the usenet server and return the status code
-     *
-     * @note   The trailing enter is removed from the line.
-     *
-     * @param  line    string to put the line in
-     * @return status code returned by the server
-     */
-    int     read_line(std::string& line);
-    
-    /**
-     * Read one line from a multiline response. Returns false when
-     * all lines have been read.
-     *
-     * @note   The actual line can be read from the buffer variable.
-     *
-     * @return was a line read from the server?
-     */
-    bool    read_multiline();
-    
-    /**
-     * Read one line from a multiline response. Returns false when
-     * all lines have been read.
-     *
-     * @note   Removes extra leading dots from the result
-     *
-     * @param  line    string to put line in
-     * @return was a line read from the server?
-     */
-    bool    read_multiline(std::string& line);
-    
-    /**
-     * Read one line from a multiline response. Returns false when
-     * all lines have been read.
-     *
-     * @note   Removes extra leading dots from the result. The input
-     *         buffer should be at least 1024 characters.
-     *
-     * @param  line    string to put line in
-     * @return was a line read from the server?
-     */
-    bool    read_multiline(char *line);
-    
-    /**
-     * Read an entire multiline response and put it in the buffer.
-     *
-     * @note   Extra leading dots are *NOT* removed from the result.
-     */
-    void    read_block();
-    
-    /**
-     * Read an entire multiline response
-     *
-     * @note   Extra leading dots are *NOT* removed from the result.
-     *
-     * @param  block   string to put the block in
-     */
-    void    read_block(std::string& block);
-    
-    /**
-     * Read an entire multiline response
-     *
-     * @note   Extra leading dots are *NOT* removed from the result.
-     *         The input buffer should be at least 1048576 characters.
-     *
-     * @param  block   string to put the block in
-     */
-    void    read_block(char *block);
-    
-    /**
-     * Read an entire multiline response and put the buffer location
-     * in the character pointer
-     *
-     * @note   The pointer has to be deallocated by hand.
-     *
-     * @param  block   pointer to pointer which will contain the returned
-     *                 data from the server
-     * @return number of characters in block
-     */
-    int     read_block(char **block);
+    int     read_lines();
     
     /**
      * Write a line to the usenet server
@@ -205,19 +121,6 @@ namespace nntp
     /**
      * Send a command and return the reply status
      *
-     * @note   The result buffer should be at least
-     *         512 bytes. This is just a shortcut to
-     *         call write_line() and then read_line()
-     *
-     * @param  line    string to write to the server
-     * @param  result  string to write the result to
-     * @return return code from the server
-     */
-    int     process_command(const char *line, char *result);
-    
-    /**
-     * Send a command and return the reply status
-     *
      * @note   This is just a shortcut to call
      *         write_line() and then read_line()
      *
@@ -228,22 +131,17 @@ namespace nntp
     int     process_command(const std::string& line, std::string& result);
     
     /**
-     * Send a command to the server and retrieve it's
-     * multiline response
+     * Send a command and return the reply status
      *
-     * @note   The returned result should be freeed when
-     *         it is no longer used
+     * @note   This is just a shortcut to call
+     *         write_line() and then read_line()
      *
-     * @throws network_exception, server_exception
-     *
-     * @param  line    command to send
-     * @param  code    status code expected
-     * @param  result  pointer to pointer where the result is written to
-     * @result number of bytes in buffer
+     * @param  line    string to write to the server
+     * @param  result  string to write the result to
+     * @param  code    integer holding the expected result code
+     * @return return code from the server
      */
-    int     process_block_command(const char *line, int code, char **result);
-    
-    int     process_block_string(const std::string& str, std::string& output);
+    int     process_command(const std::string& line, const int code, std::string& result);
     
     /**
      * Login to the usenet server

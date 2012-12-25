@@ -33,7 +33,7 @@ int main(int argc, const char * argv[])
       
       std::getline(std::cin, command);  // read a line from std::cin into line
           
-      nntp.process_block_string(command + "\n", output);
+      nntp.process_command(command + "\n", output);
       std::cout << output << std::endl;
       
     }
